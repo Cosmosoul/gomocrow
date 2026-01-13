@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技能五子棋</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 开始菜单样式 */
+        .start-menu-modal {
+            max-width: 600px;
+            background: linear-gradient(145deg, #1a1a2e, #0d1b2a);
+            border: 3px solid #4fc3f7;
+        }
+        
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .menu-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #2a4d8f, #1a3d7a);
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+        
+        .menu-btn:hover {
+            background: linear-gradient(145deg, #3a6dbf, #2a5daa);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(79, 195, 247, 0.4);
+        }
+        
+        .game-description {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(20, 40, 80, 0.3);
+            border-radius: 10px;
+            border: 1px solid #2a4d8f;
+        }
+        
+        .game-description h3 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .game-description ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .game-description li {
+            padding: 8px 0;
+            color: #ccc;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .game-description li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        /* 回合数样式调整 */
+        .round-info {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #4fc3f7;
+            padding: 8px 15px;
+            background: rgba(20, 40, 80, 0.7);
+            border-radius: 8px;
+            border: 1px solid #3a5f9f;
+        }
+        
+        /* 拖拽增强样式 */
+        .slot.filled::after {
+            content: '⇅';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 12px;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .slot.filled:hover::after {
+            opacity: 1;
+        }
+        
+        /* 使用按钮动画增强 */
+        @keyframes useBtnPulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 5px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        .slot-use-btn {
+            animation: useBtnPulse 2s infinite;
+        }
+        
+        /* 拖拽提示 */
+        .drag-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: #4fc3f7;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+        
+        /* 技能选择模态框样式 */
+        .skill-select-modal {
+            max-width: 800px;
+            background: linear-gradient(145deg, #1a1a2e, #0d1b2a);
+            border: 3px solid #ff9800;
+        }
+        
+        .skill-select-header {
+            background: rgba(255, 152, 0, 0.9);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #ff5722;
+        }
+        
+        .skill-select-header h2 {
+            color: white;
+            font-size: 2rem;
+            margin: 0;
+        }
+        
+        .skill-select-header p {
+            color: #ffe0b2;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .skill-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .skill-option {
+            background: rgba(30, 60, 120, 0.7);
+            border: 2px solid #3a5f9f;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 15px;
+            height: 250px;
+            overflow: hidden;
+        }
+        
+        .skill-option:hover {
+            border-color: #ff9800;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        .skill-option-icon {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .skill-option h4 {
+            color: #4fc3f7;
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        
+        .skill-option-description {
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .skill-option-description::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .skill-option-description::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .skill-option-description::-webkit-scrollbar-thumb {
+            background: #4fc3f7;
+            border-radius: 10px;
+        }
+        
+        /* 商店下一关按钮 */
+        .next-level-shop-btn {
+            background: linear-gradient(145deg, #4caf50, #2e7d32) !important;
+            margin-left: 10px;
+        }
+        
+        .next-level-shop-btn:hover {
+            background: linear-gradient(145deg, #66bb6a, #388e3c) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 开始菜单界面 -->
+    <div class="modal active" id="start-menu-modal">
+        <div class="modal-content start-menu-modal">
+            <div class="modal-header">
+                <h2>技能五子棋</h2>
+            </div>
+            <div class="modal-body">
+                <div class="menu-options">
+                    <button id="start-game-btn" class="menu-btn">
+                        <i class="fas fa-play"></i> 开始游戏
+                    </button>
+                    <button id="settings-menu-btn" class="menu-btn">
+                        <i class="fas fa-cog"></i> 设置
+                    </button>
+                    <button id="help-menu-btn" class="menu-btn">
+                        <i class="fas fa-question-circle"></i> 帮助
+                    </button>
+                    <button id="exit-menu-btn" class="menu-btn">
+                        <i class="fas fa-door-open"></i> 退出
+                    </button>
+                </div>
+                <div class="game-description">
+                    <h3>玩法说明</h3>
+                    <ul>
+                        <li>构筑技能，获取积分，达成目标</li>
+                        <li>连续胜利15关，爬塔成功</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 初始技能选择界面 -->
+    <div class="modal" id="skill-select-modal">
+        <div class="modal-content skill-select-modal">
+            <div class="skill-select-header">
+                <h2>选择你的初始技能</h2>
+                <p>从以下3张技能牌中选择1张作为游戏开始的免费赠送技能</p>
+            </div>
+            <div class="modal-body">
+                <div class="skill-options" id="skill-options">
+                    <!-- 技能选项将通过JS生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <!-- 顶部信息栏 -->
+        <div class="top-bar">
+            <div class="round-info">
+                回合数：<span id="current-round">0</span>
+            </div>
+            <div class="game-info">
+                第 <span id="current-game">1/15</span> 局
+            </div>
+            <div class="target-score">
+                目标积分：<span id="target-score">1000</span>
+            </div>
+            <div class="current-score">
+                当前积分：<span id="current-score">800</span>
+            </div>
+            <div class="money-info">
+                金额 <span id="money">1000</span>
+            </div>
+            <div class="pieces-info">
+                棋子 <span id="pieces-used">25</span>/30
+            </div>
+            <div class="buttons">
+                <button id="settings-btn"><i class="fas fa-cog"></i> 设置</button>
+                <button id="help-btn"><i class="fas fa-question-circle"></i> 帮助</button>
+                <button id="share-btn"><i class="fas fa-share-alt"></i> 分享</button>
+                <button id="exit-btn"><i class="fas fa-door-open"></i> 退出</button>
+            </div>
+        </div>
+
+        <!-- 主游戏区域 -->
+        <div class="main-game-area">
+            <!-- 左侧棋盘 -->
+            <div class="board-container">
+                <div class="board-header">
+                    <h3>技能五子棋</h3>
+                    <div class="ai-status">
+                        <div class="emotion-indicator">
+                            <span class="emotion-label">情绪：</span>
+                            <span class="emotion" id="ai-emotion">得意</span>
+                        </div>
+                        <div class="difficulty-bar">
+                            <div class="bar-labels">
+                                <span>低</span>
+                                <span>正常</span>
+                                <span>高</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="ai-difficulty-bar"></div>
+                                <div class="bar-marker"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="board-wrapper">
+                    <div class="board" id="game-board">
+                        <!-- 棋盘格将通过JS生成 -->
+                    </div>
+                </div>
+                <div class="board-footer">
+                    <div class="formation-levels">
+                        <div class="formation">
+                            <span>横：</span>
+                            <div class="level-indicator" id="formation-horizontal">
+                                <span class="level">V</span>
+                            </div>
+                        </div>
+                        <div class="formation">
+                            <span>竖：</span>
+                            <div class="level-indicator" id="formation-vertical">
+                                <span class="level">V</span>
+                            </div>
+                        </div>
+                        <div class="formation">
+                            <span>撇：</span>
+                            <div class="level-indicator" id="formation-diagonal-left">
+                                <span class="level">V</span>
+                            </div>
+                        </div>
+                        <div class="formation">
+                            <span>捺：</span>
+                            <div class="level-indicator" id="formation-diagonal-right">
+                                <span class="level">V</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-message" id="game-message">
+                        还不够，我的朋友
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧玩家区域 -->
+            <div class="player-area">
+                <!-- 技能槽位 -->
+                <div class="skill-slots-container">
+                    <h3>技能牌 (6个槽位) <span class="drag-hint">可拖拽排序</span></h3>
+                    <div class="slots" id="skill-slots">
+                        <!-- 技能槽将通过JS生成 -->
+                    </div>
+                </div>
+                
+                <!-- 道具槽位 -->
+                <div class="item-slots-container">
+                    <h3>道具牌 (4个槽位) <span class="drag-hint">可拖拽排序，点击"使用"按钮触发</span></h3>
+                    <div class="slots" id="item-slots">
+                        <!-- 道具槽将通过JS生成 -->
+                    </div>
+                </div>
+                
+                <!-- 饰品槽位 -->
+                <div class="accessory-slots-container">
+                    <h3>饰品 (2个槽位) <span class="drag-hint">可拖拽排序</span></h3>
+                    <div class="slots" id="accessory-slots">
+                        <!-- 饰品槽将通过JS生成 -->
+                    </div>
+                </div>
+                
+                <!-- 商店按钮 -->
+                <div class="shop-section">
+                    <button id="shop-btn" class="shop-btn">
+                        <i class="fas fa-store"></i> 进入商店
+                    </button>
+                    <div class="shop-level">
+                        商店等级: <span id="shop-level">1</span>
+                    </div>
+                    <button id="reroll-btn" class="reroll-btn">
+                        <i class="fas fa-redo"></i> 重抽 (价格: <span id="reroll-price">10</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商店模态框 -->
+        <div class="modal" id="shop-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="shop-title">商店</h2>
+                    <button class="close-modal" id="close-shop">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="shop-items">
+                        <!-- 商店商品将通过JS生成 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="upgrade-shop-btn">升级商店 (200)</button>
+                    <button id="next-level-shop-btn" class="next-level-shop-btn">下一关</button>
+                    <div class="seed-info">
+                        随机种子: <span id="seed-value">123456</span>
+                        <button id="copy-seed-btn">复制种子</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技能/道具详情模态框 -->
+        <div class="modal" id="detail-modal">
+            <div class="modal-content detail-modal">
+                <div class="modal-header">
+                    <h2 id="detail-title">技能详情</h2>
+                    <button class="close-modal" id="close-detail">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="detail-content">
+                        <div class="detail-icon" id="detail-icon"></div>
+                        <div class="detail-text">
+                            <h3 id="detail-name">技能名称</h3>
+                            <p id="detail-description">技能描述</p>
+                            <p class="detail-price">价格: <span id="detail-price">150</span></p>
+                            <p class="detail-type">类型: <span id="detail-type">技能牌</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="buy-item-btn">购买</button>
+                    <button id="sell-item-btn">售出</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏结束模态框 -->
+        <div class="modal" id="game-over-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="game-over-title">游戏结束</h2>
+                    <button class="close-modal" id="close-game-over">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p id="game-over-message"></p>
+                    <div class="game-stats">
+                        <div class="stat">
+                            <span>获得积分:</span>
+                            <span id="final-score">0</span>
+                        </div>
+                        <div class="stat">
+                            <span>获得奖金:</span>
+                            <span id="final-money">0</span>
+                        </div>
+                        <div class="stat">
+                            <span>剩余棋子:</span>
+                            <span id="final-pieces">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="next-level-btn" style="display:none;">下一关</button>
+                    <button id="restart-btn">确定</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 特效显示区域 -->
+        <div class="effects-container">
+            <div class="combo-effect" id="combo-effect">
+                <div class="combo-text" id="combo-text">+100</div>
+                <div class="combo-breakdown" id="combo-breakdown"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 音频元素 -->
+    <audio id="place-piece-sound" src="assets/sounds/place.mp3" preload="auto"></audio>
+    <audio id="eliminate-sound" src="assets/sounds/eliminate.mp3" preload="auto"></audio>
+    <audio id="skill-sound" src="assets/sounds/skill.mp3" preload="auto"></audio>
+    <audio id="shop-sound" src="assets/sounds/shop.mp3" preload="auto"></audio>
+
+    <script src="skills.js"></script>
+    <script src="ai.js"></script>
+    <script src="shop.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
