@@ -12,7 +12,6 @@ class Game {
         this.level = 1;
         this.maxLevel = 15;
         this.currentGame = 1;
-        this.addViewportMeta();
         
         // 阵型等级
         this.formations = {
@@ -86,77 +85,6 @@ class Game {
         // 绑定事件
         this.bindEvents();
     }
-    // 在Game类中添加方法
-addViewportMeta() {
-    // 确保视口设置正确
-    let metaViewport = document.querySelector('meta[name="viewport"]');
-    if (!metaViewport) {
-        metaViewport = document.createElement('meta');
-        metaViewport.name = 'viewport';
-        document.head.appendChild(metaViewport);
-    }
-    
-    // 设置视口参数
-    metaViewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-    
-    // 添加全屏支持
-    this.enableFullScreen();
-}
-
-enableFullScreen() {
-    // 添加全屏按钮
-    const fullscreenBtn = document.createElement('button');
-    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-    fullscreenBtn.style.cssText = `
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        z-index: 999;
-        background: rgba(20, 40, 80, 0.8);
-        color: white;
-        border: 2px solid #2a4d8f;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        font-size: 1.2rem;
-        cursor: pointer;
-        display: none;
-    `;
-    
-    document.body.appendChild(fullscreenBtn);
-    
-    // 检测是否为移动设备
-    if (this.isMobileDevice()) {
-        fullscreenBtn.style.display = 'block';
-        
-        fullscreenBtn.addEventListener('click', () => {
-            this.toggleFullScreen();
-        });
-    }
-    
-    // 监听全屏变化
-    document.addEventListener('fullscreenchange', () => {
-        fullscreenBtn.innerHTML = document.fullscreenElement ? 
-            '<i class="fas fa-compress"></i>' : 
-            '<i class="fas fa-expand"></i>';
-    });
-}
-
-isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-toggleFullScreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.log(`全屏请求失败: ${err.message}`);
-        });
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
-    }
-}
     
     init() {
         this.createBoard();
@@ -1788,30 +1716,6 @@ applyAllScoreEffects(baseScore, pieceCount) {
             }, 300);
         }
     }
-
-    handleResize() {
-    // 重新调整UI
-    this.updateUI();
-    
-    // 如果是竖屏且屏幕较小，显示提示
-    if (window.innerHeight > window.innerWidth && window.innerWidth < 1000) {
-        this.showOrientationMessage();
-    }
-}
-
-showOrientationMessage() {
-    const message = document.getElementById('game-message');
-    if (message) {
-        message.textContent = '请横屏以获得最佳体验';
-        message.style.animation = 'pulse 1s infinite';
-        
-        setTimeout(() => {
-            if (message.textContent === '请横屏以获得最佳体验') {
-                message.textContent = '还不够，我的朋友';
-            }
-        }, 2000);
-    }
-}
     
     bindEvents() {
         // 开始菜单按钮
@@ -1870,22 +1774,8 @@ showOrientationMessage() {
         document.addEventListener('drop', (e) => {
             e.preventDefault();
         });
-
-        // 添加屏幕方向变化监听
-    window.addEventListener('resize', () => {
-        this.handleResize();
-    });
-    
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            this.handleResize();
-        }, 100);
-    });
-
     }
 }
-
-
 
 // 初始化游戏
 let game;
